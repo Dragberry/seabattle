@@ -1,4 +1,4 @@
-package org.dragberry.seabattle.client
+package org.dragberry.seabattle.client.console
 
 import kotlinx.coroutines.*
 import java.lang.Exception

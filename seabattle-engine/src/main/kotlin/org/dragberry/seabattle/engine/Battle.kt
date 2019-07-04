@@ -3,7 +3,6 @@ package org.dragberry.seabattle.engine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import org.dragberry.seabattle.log
 import kotlin.system.exitProcess
 
 class Battle(
@@ -41,20 +40,16 @@ class Battle(
 
     private suspend fun initialize() = coroutineScope {
         val initialized = async {
-            log("First commander starting initialization..")
             commander.shakeHandsWith(enemyCommander)
         }
 
         val enemyInitialized = async {
-            log("Second commander starting initialization..")
             enemyCommander.shakeHandsWith(commander)
         }
 
         if (initialized.await() && enemyInitialized.await()) {
-            log("Both commanders are ready to play")
             roles.isEnemyAggressor = enemyCommander.isAggressor
         } else {
-            log("Somebody is not ready to play")
             exitProcess(0)
         }
     }

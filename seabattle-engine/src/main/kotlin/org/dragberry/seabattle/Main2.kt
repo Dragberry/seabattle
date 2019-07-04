@@ -1,6 +1,6 @@
 package org.dragberry.seabattle
 
-import org.dragberry.seabattle.client.ConsoleClient
+import org.dragberry.seabattle.client.console.ConsoleClient
 
 class Main2
 

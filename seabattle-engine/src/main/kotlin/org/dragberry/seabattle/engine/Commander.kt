@@ -4,7 +4,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
-import org.dragberry.seabattle.log
 import java.lang.IllegalStateException
 
 abstract class Commander(protected val defaultName: String = "Dummy commander") {
@@ -29,7 +28,6 @@ abstract class Commander(protected val defaultName: String = "Dummy commander") 
         this.enemy = enemy
 
         return coroutineScope {
-            log("$defaultName:\tStarting initialization...")
 
             tempName = StepExecutor("Name",
                 { provideName() },
@@ -47,7 +45,6 @@ abstract class Commander(protected val defaultName: String = "Dummy commander") 
             if (accepted) {
                 var attempt = 1
                 do {
-                    log("\nTrying to resolve roles... Attempt: ${attempt++}")
                     val rolesResult = StepExecutor("Roles",
                         { provideRole() },
                         { RoleEvent(it) }).execute()
@@ -112,26 +109,19 @@ abstract class Commander(protected val defaultName: String = "Dummy commander") 
         suspend fun execute(): Pair<V, V> {
             return coroutineScope {
                 val startTime = System.currentTimeMillis()
-                log("$defaultName:\tStarting job for <$jobName>...")
                 val job = async(Dispatchers.IO) {
-                    log("$defaultName:\tProviding <$jobName>...")
                     val value = provideValue()
                     events.send(createEvent(value))
-                    log("$defaultName:\tThe result for <$jobName> has been provided: $value. Time spent ${System.currentTimeMillis() - startTime} ms")
                     value
                 }
 
                 @Suppress("UNCHECKED_CAST")
                 val enemyJob = async(Dispatchers.IO)  {
-                    log("$defaultName:\tAwaiting event for <$jobName>")
                     val event = enemy!!.events.receive() as E
-                    log("$defaultName:\t Enemy event ${event.javaClass.simpleName} for <$jobName> has been received with value: ${event.value}")
                     onEnemyEvent(event)
                     event.value
                 }
-                log("$defaultName:\tAwaiting results for job <$jobName>...")
                 val jobResults = Pair(job.await(), enemyJob.await())
-                log("$defaultName:\tJob for <$jobName> has been finished")
                 jobResults
             }
         }
