@@ -1,7 +1,7 @@
 package org.dragberry.seabattle.engine
 
 class Captain(
-    private val controller: Controller,
+    private val controller: CommanderController,
     isHidden: Boolean
 ) : LocalCommander(controller, controller, controller, isHidden) {
 

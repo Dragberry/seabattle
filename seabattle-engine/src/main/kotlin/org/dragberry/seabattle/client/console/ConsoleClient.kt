@@ -17,7 +17,7 @@ class ConsoleClient {
 
     private val mutex = Mutex()
 
-    private inner class ConsoleController(private var defaultName: String) : Controller {
+    private inner class ConsoleController(private var defaultName: String) : CommanderController {
 
         private var name: String? = null
 
