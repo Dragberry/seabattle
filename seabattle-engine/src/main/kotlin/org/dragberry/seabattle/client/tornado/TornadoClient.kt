@@ -1,6 +1,7 @@
 package org.dragberry.seabattle.client.tornado
 
 import javafx.beans.property.BooleanProperty
+import javafx.geometry.Insets
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.Button
@@ -57,6 +58,8 @@ class CreatePlayerView : Fragment() {
 
     private val panelTitle: String by param()
 
+    private val isRightSection: Boolean by param()
+
     private val readyCheckBox = CheckBox()
 
     private var commander by Delegates.observable<Commander?>(null) { _, _, newValue ->
@@ -64,34 +67,40 @@ class CreatePlayerView : Fragment() {
     }
 
     override val root = vbox {
+        padding = insets(10.0)
+        spacing = 10.0
         hbox {
-            label(panelTitle)
-            add(readyCheckBox)
+            if (isRightSection) add(readyCheckBox) else label(panelTitle)
+            region { hgrow = Priority.ALWAYS }
+            if (isRightSection) label(panelTitle) else add(readyCheckBox)
         }
-
-        button("Local") {
-            addClass(GameStyle.menuButton)
-            action {
-                commander = Captain(
-                    object : CommanderController {
-                        override suspend fun getName(): String = "Player"
-                        override suspend fun getRole(): Boolean = Random.nextBoolean()
-                        override suspend fun getSettings(): BattleSettings = BattleSettings(10, 10, listOf(4,3,2,1))
-                        override suspend fun giveOrder(): Coordinate = Coordinate(1, 1)
-                    },
-                    isHidden = false)
+        vbox {
+            spacing = 10.0
+            button("Local") {
+                useMaxWidth = true
+                action {
+                    commander = Captain(
+                        object : CommanderController {
+                            override suspend fun getName(): String = "Player"
+                            override suspend fun getRole(): Boolean = Random.nextBoolean()
+                            override suspend fun getSettings(): BattleSettings = BattleSettings(10, 10, listOf(4, 3, 2, 1))
+                            override suspend fun giveOrder(): Coordinate = Coordinate(1, 1)
+                        },
+                        isHidden = false
+                    )
+                }
             }
-        }
-        button("AI") {
-            addClass(GameStyle.menuButton)
-            action {
-                commander = AICommander()
+            button("AI") {
+                useMaxWidth = true
+                action {
+                    commander = AICommander()
+                }
             }
-        }
-        button("Remote") {
-            addClass(GameStyle.menuButton)
-            action {
-                println("Remote commander")
+            button("Remote") {
+                useMaxWidth = true
+                action {
+                    println("Remote commander")
+                }
             }
         }
     }
@@ -99,21 +108,25 @@ class CreatePlayerView : Fragment() {
 
 class OpponentsView : View() {
 
-    private val player1 = find<CreatePlayerView>(mapOf("panelTitle" to "Player 1"))
+    private val player1 = find<CreatePlayerView>(mapOf("panelTitle" to "Player 1", "isRightSection" to false))
 
-    private val player2 = find<CreatePlayerView>(mapOf("panelTitle" to "Player 2"))
+    private val player2 = find<CreatePlayerView>(mapOf("panelTitle" to "Player 2", "isRightSection" to true))
 
     override val root = gridpane {
-        gridpaneColumnConstraints {
-            hgrow = Priority.ALWAYS
-            percentWidth = 50.0
-        }
+        val cs1 = ColumnConstraints()
+        cs1.percentWidth = 50.0
+        val cs2 = ColumnConstraints()
+        cs2.percentWidth = 50.0
+        columnConstraints.addAll(cs1, cs2)
+
         row {
             add(player1)
             add(player2)
         }
+
         row {
-            button("Back to main menu") {
+            button("Back") {
+                useMaxWidth = true
                 action {
                     println("Go to main menu")
                     replaceWith<MenuView>()
