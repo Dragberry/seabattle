@@ -9,6 +9,7 @@ import javafx.scene.control.CheckBox
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
+import javafx.scene.layout.RowConstraints
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 import javafx.stage.Stage
@@ -60,10 +61,26 @@ class CreatePlayerView : Fragment() {
 
     private val isRightSection: Boolean by param()
 
+    private val buttons = mutableListOf<Button>()
+
     private val readyCheckBox = CheckBox()
+    init {
+        readyCheckBox.isDisable = true
+        readyCheckBox.selectedProperty().addListener { _, _, newValue ->
+            println("Checkbox has been changed: $newValue")
+            if (newValue == null) {
+                commander = null
+                buttons.forEach { it.isDisable = false }
+            }
+        }
+    }
 
     private var commander by Delegates.observable<Commander?>(null) { _, _, newValue ->
-        readyCheckBox.selectedProperty().set(newValue != null)
+        println("Commander has been changed: $newValue")
+        val isCommanderNull = newValue == null
+        readyCheckBox.isSelected = !isCommanderNull
+        readyCheckBox.isDisable = isCommanderNull
+        buttons.forEach { it.isDisable = !isCommanderNull }
     }
 
     override val root = vbox {
@@ -76,7 +93,7 @@ class CreatePlayerView : Fragment() {
         }
         vbox {
             spacing = 10.0
-            button("Local") {
+            val localBtn = button("Local") {
                 useMaxWidth = true
                 action {
                     commander = Captain(
@@ -90,18 +107,24 @@ class CreatePlayerView : Fragment() {
                     )
                 }
             }
-            button("AI") {
+            buttons.add(localBtn)
+            localBtn
+            val aiButton = button("AI") {
                 useMaxWidth = true
                 action {
                     commander = AICommander()
                 }
             }
-            button("Remote") {
+            buttons.add(aiButton)
+            aiButton
+            val remoteButton = button("Remote") {
                 useMaxWidth = true
                 action {
                     println("Remote commander")
                 }
             }
+            buttons.add(remoteButton)
+            remoteButton
         }
     }
 }
@@ -119,19 +142,30 @@ class OpponentsView : View() {
         cs2.percentWidth = 50.0
         columnConstraints.addAll(cs1, cs2)
 
+        val rc1 = RowConstraints()
+        rc1.percentHeight = 80.0
+        val rc2 = RowConstraints()
+        rc2.percentHeight = 20.0
+        rowConstraints.addAll(rc1, rc2)
+
         row {
             add(player1)
             add(player2)
         }
 
         row {
-            button("Back") {
+            add(vbox {
+                padding = insets(10.0)
                 useMaxWidth = true
-                action {
-                    println("Go to main menu")
-                    replaceWith<MenuView>()
+                button("Back") {
+                    useMaxWidth = true
+                    vgrow = Priority.ALWAYS
+                    action {
+                        println("Go to main menu")
+                        replaceWith<MenuView>()
+                    }
                 }
-            }
+            }, 0, 1, 2, 1)
         }
     }
 
