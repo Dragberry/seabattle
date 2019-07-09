@@ -1,6 +1,8 @@
 package org.dragberry.seabattle.client.tornado
 
 import javafx.beans.property.SimpleStringProperty
+import javafx.beans.value.ChangeListener
+import javafx.beans.value.ObservableValue
 import javafx.scene.Parent
 import javafx.scene.control.Button
 import javafx.scene.control.CheckBox
@@ -10,6 +12,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.dragberry.seabattle.engine.*
 import tornadofx.*
+import java.beans.PropertyChangeListener
+import java.util.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -38,7 +42,7 @@ class CreatePlayerView : Fragment() {
         }
     }
 
-    private var commander by Delegates.observable<Commander?>(null) { _, _, newValue ->
+    var commander by Delegates.observable<Commander?>(null) { _, _, newValue ->
         if (newValue != null) {
             readyCheckBox.isSelected = true
             readyCheckBox.isDisable = false
@@ -48,6 +52,13 @@ class CreatePlayerView : Fragment() {
             readyCheckBox.isDisable = true
             buttons.forEach { it.isDisable = false }
         }
+        onCommander?.invoke(newValue)
+    }
+
+    private var onCommander: ((Commander?) -> Unit)? = null
+
+    fun onCommander(action: (Commander?) -> Unit) {
+        onCommander = action
     }
 
     override val root = vbox {
@@ -64,6 +75,7 @@ class CreatePlayerView : Fragment() {
                 useMaxWidth = true
                 action {
                     val dialog = find<CaptainCreateDialog>()
+                    dialog.title = playerNameDefault
                     dialog.openWindow()
                     GlobalScope.launch { commander = dialog.getCommander() }
                 }
@@ -105,10 +117,24 @@ class CaptainCreateDialog : Fragment() {
             columnConstraints.addAll(cs1, cs2)
 
             useMaxWidth = true
+            spacing = 10.0
 
             row {
                 label("Player name:")
                 textfield(name)
+            }
+            row {
+                add(label("Settings:"), 0, 1, 2, 1)
+            }
+            row {
+                hbox {
+                    label("Width:")
+                    textfield()
+                }
+                hbox {
+                    label("Height:")
+                    textfield()
+                }
             }
             row {
                 spacing = 10.0

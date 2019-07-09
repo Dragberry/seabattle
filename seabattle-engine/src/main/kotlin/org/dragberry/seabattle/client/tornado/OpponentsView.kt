@@ -1,5 +1,6 @@
 package org.dragberry.seabattle.client.tornado
 
+import javafx.scene.control.Button
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.Priority
 import javafx.scene.layout.RowConstraints
@@ -11,6 +12,16 @@ class OpponentsView : View() {
 
     private val player2 = find<CreatePlayerView>(mapOf("playerNameDefault" to "Player 2", "isRightSection" to true))
 
+    init {
+        player1.onCommander { startButton.isDisable = it == null || player2.commander == null }
+        player2.onCommander { startButton.isDisable = it == null || player1.commander == null }
+    }
+
+    private val startButton = button("Start") {
+        useMaxWidth = true
+        isDisable = true
+    }
+
     override val root = gridpane {
         val cs1 = ColumnConstraints()
         cs1.percentWidth = 50.0
@@ -19,9 +30,9 @@ class OpponentsView : View() {
         columnConstraints.addAll(cs1, cs2)
 
         val rc1 = RowConstraints()
-        rc1.percentHeight = 80.0
+        rc1.percentHeight = 70.0
         val rc2 = RowConstraints()
-        rc2.percentHeight = 20.0
+        rc2.percentHeight = 30.0
         rowConstraints.addAll(rc1, rc2)
 
         row {
@@ -31,11 +42,15 @@ class OpponentsView : View() {
 
         row {
             add(vbox {
-                padding = insets(10.0)
+                padding = insets(10.0, 0.0)
+                spacing = 10.0
                 useMaxWidth = true
+                vgrow = Priority.ALWAYS
+
+                add(startButton)
+
                 button("Back") {
                     useMaxWidth = true
-                    vgrow = Priority.ALWAYS
                     action {
                         println("Go to main menu")
                         replaceWith<MenuView>()
