@@ -8,6 +8,7 @@ import javafx.beans.value.ObservableValue
 import javafx.scene.Parent
 import javafx.scene.control.Button
 import javafx.scene.control.CheckBox
+import javafx.scene.control.Spinner
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.Priority
 import kotlinx.coroutines.GlobalScope
@@ -17,6 +18,7 @@ import tornadofx.*
 import java.beans.PropertyChangeListener
 import java.lang.NumberFormatException
 import java.util.*
+import kotlin.collections.LinkedHashMap
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -111,9 +113,18 @@ class CaptainCreateDialog : Fragment() {
 
     private val nameProp = SimpleStringProperty()
 
-    private val widthProp = SimpleStringProperty()
+    private val widthProp = SimpleIntegerProperty(10)
 
-    private val heightProp = SimpleStringProperty()
+    private val heightProp = SimpleIntegerProperty(10)
+
+    private val ships = LinkedHashMap<Int, SimpleIntegerProperty>(5)
+    init {
+        ships[1] = SimpleIntegerProperty(4)
+        ships[2] = SimpleIntegerProperty(3)
+        ships[3] = SimpleIntegerProperty(2)
+        ships[4] = SimpleIntegerProperty(1)
+        ships[5] = SimpleIntegerProperty(0)
+    }
 
     override val root = gridpane {
         val cs1 = ColumnConstraints()
@@ -140,17 +151,21 @@ class CaptainCreateDialog : Fragment() {
         }
         row {
             add(label("Width:"), 0, 2, 1, 1)
-            add(textfield(widthProp) {
-                widthProp.addListener { observable, oldValue, newValue ->
-                    println("old: $oldValue; new: $newValue")
-                    if (!newValue.matches(Regex("\\d*"))) {
-                        text = newValue.replace(Regex("\\d*"), "")
-                    }
-                }
-            }, 1, 2, 1, 1)
+            add(spinner(3, 20, 10, 1, false, widthProp), 1, 2, 1, 1)
             add(label("Height:"), 2, 2, 1, 1)
-            add(textfield(heightProp), 3, 2, 1, 1)
+            add(spinner(3, 20, 10, 1, false, heightProp), 3, 2, 1, 1)
         }
+        row {
+            add(label("Ships:"), 0, 3, 4, 1)
+        }
+        var rowIndex = 4
+        ships.forEach { shipSize, prop ->
+            row {
+                add(label("#".repeat(shipSize)), 0, rowIndex, 2, 1)
+                add(spinner(0, 10, prop.value, 1, false, prop), 2, rowIndex++, 2, 1)
+            }
+        }
+
         row {
             add(button("Confirm") {
                 padding = insets(10.0)
@@ -160,9 +175,17 @@ class CaptainCreateDialog : Fragment() {
                         object : CommanderController {
                             override suspend fun getName(): String = nameProp.get()
                             override suspend fun getRole(): Boolean = Random.nextBoolean()
-                            override suspend fun getSettings(): BattleSettings =
-                                BattleSettings(10, 10, listOf(4, 3, 2, 1))
-
+                            override suspend fun getSettings(): BattleSettings {
+                                return BattleSettings(
+                                    widthProp.value,
+                                    heightProp.value,
+                                    ships
+                                        .flatMap { shipSizeProp ->
+                                            List(shipSizeProp.value.value) { shipSizeProp.key }
+                                        }
+                                        .toList()
+                                        .sortedDescending())
+                            }
                             override suspend fun giveOrder(): Coordinate =
                                 Coordinate(1, 1)
                         },
@@ -170,14 +193,14 @@ class CaptainCreateDialog : Fragment() {
                     ))
                     close()
                 }
-            }, 0, 3, 2, 1)
+            }, 0, rowIndex, 2, 1)
             add(button("Cancel") {
                 padding = insets(10.0)
                 useMaxWidth = true
                 action {
                     close()
                 }
-            }, 2, 3, 2, 1)
+            }, 2, rowIndex++, 2, 1)
         }
     }
 
