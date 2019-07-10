@@ -4,9 +4,14 @@ import javafx.scene.control.Button
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.Priority
 import javafx.scene.layout.RowConstraints
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.dragberry.seabattle.engine.Battle
 import tornadofx.*
 
 class OpponentsView : View() {
+
+    private val controller: GameController by inject()
 
     private val player1 = find<CreatePlayerView>(mapOf("playerNameDefault" to "Player 1", "isRightSection" to false))
 
@@ -20,6 +25,14 @@ class OpponentsView : View() {
     private val startButton = button("Start") {
         useMaxWidth = true
         isDisable = true
+        action {
+            try {
+                controller.createBattle(player1.commander!!, player2.commander!!)
+                replaceWith(find<GameView>())
+            } catch (exc : Exception) {
+                println("An error has occurred..")
+            }
+        }
     }
 
     override val root = gridpane {
