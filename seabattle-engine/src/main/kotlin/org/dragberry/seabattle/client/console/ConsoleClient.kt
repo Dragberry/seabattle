@@ -122,7 +122,9 @@ class ConsoleClient {
                 }, "Join as AI game")
 
             )).createCommanders()
-        Battle(gameType.first, gameType.second).start { battle ->
+        val battle = Battle(gameType.first, gameType.second)
+        battle.initialize()
+        battle.play { battle ->
             println("\t${"====".repeat(battle.settings.width + 1)}  Round\t${battle.round}\t${"====".repeat(battle.settings.width + 1)}")
             val aggressor = battle.roles.aggressor()
             if (aggressor is FleetOwner && !aggressor.isHidden) {

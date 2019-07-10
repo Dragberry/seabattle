@@ -5,6 +5,7 @@ import javafx.scene.control.ScrollPane
 import javafx.scene.layout.ColumnConstraints
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.dragberry.seabattle.engine.Battle
 import tornadofx.*
 
 class GameView : View() {
@@ -48,10 +49,10 @@ class GameView : View() {
     }
 
     fun start() {
+        controller.createBattle()
         GlobalScope.launch {
-            controller.battle?.start {
-                println("Round ${it.round}")
-            }
+            controller.initializeBattle()
+            controller.play()
         }
     }
 }

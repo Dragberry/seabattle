@@ -18,8 +18,14 @@ class OpponentsView : View() {
     private val player2 = find<CreatePlayerView>(mapOf("playerNameDefault" to "Player 2", "isRightSection" to true))
 
     init {
-        player1.onCommander { startButton.isDisable = it == null || player2.commander == null }
-        player2.onCommander { startButton.isDisable = it == null || player1.commander == null }
+        player1.onCommander {
+            controller.commander = it
+            startButton.isDisable = it == null || player2.commander == null
+        }
+        player2.onCommander {
+            controller.enemy = it
+            startButton.isDisable = it == null || player1.commander == null
+        }
     }
 
     private val startButton = button("Start") {
@@ -27,7 +33,6 @@ class OpponentsView : View() {
         isDisable = true
         action {
             try {
-                controller.createBattle(player1.commander!!, player2.commander!!)
                 replaceWith(find<GameView>())
             } catch (exc : Exception) {
                 println("An error has occurred..")

@@ -33,12 +33,7 @@ class Battle(
 
     val roles: Roles = Roles()
 
-    suspend fun start(onEveryStep: (Battle) -> Unit = { }) {
-        initialize()
-        play(onEveryStep)
-    }
-
-    private suspend fun initialize() = coroutineScope {
+    suspend fun initialize() = coroutineScope {
         val initialized = async {
             commander.shakeHandsWith(enemyCommander)
         }
@@ -54,7 +49,7 @@ class Battle(
         }
     }
 
-    private suspend fun play(onEveryStep: (Battle) -> Unit = { }) {
+    suspend fun play(onEveryStep: (Battle) -> Unit = { }) {
         onEveryStep(this)
         do {
             playRound()
