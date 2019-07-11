@@ -1,9 +1,9 @@
 package org.dragberry.seabattle.client.tornado
 
-import javafx.application.Platform
 import javafx.beans.property.SimpleStringProperty
 import javafx.scene.control.ScrollPane
 import javafx.scene.layout.ColumnConstraints
+import javafx.scene.layout.Pane
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.javafx.JavaFx as Main
 import kotlinx.coroutines.GlobalScope
@@ -26,13 +26,20 @@ class GameView : View() {
         content  = label(logField)
     }
 
-    private val field = pane()
+    private val field = stackpane()
     private val roundInfo = SimpleStringProperty()
-    private val info = pane {
+    private val info = vbox {
+        useMaxWidth = true
+        spacing = 10.0
         label(roundInfo)
-        button("Pause")
-        button("Stop")
+        button("Pause") {
+            useMaxWidth = true
+        }
+        button("Stop") {
+            useMaxWidth = true
+        }
     }
+
     private val enemyField = pane()
 
     override val root = borderpane {
@@ -65,12 +72,37 @@ class GameView : View() {
         controller.createBattle()
         GlobalScope.launch {
             controller.initializeBattle {
-                field.add(label(it.commander.name))
+                with(primaryStage) {
+                    width = it.settings.width * 25.0 * 2 / 0.8
+                    height = it.settings.height * 25.0 + 50
+                }
+                field.add(createField(it.settings.width, it.settings.height))
                 roundInfo.value = "Round: ${it.round}"
-                enemyField.add(label(it.enemyCommander.name))
+                enemyField.add(createField(it.settings.width, it.settings.height))
             }
             controller.play {
                 roundInfo.value = "Round: ${it.round}"
+            }
+        }
+    }
+
+    private fun createField(width: Int, height: Int): Pane {
+        return pane {
+            for (row in 0..height) {
+                for (column in 0..width) {
+                    add(pane {
+                        val width = 25.0
+                        val height = 25.0
+                        val x = column * height
+                        val y = row * width
+                        layoutX = x
+                        layoutY = y
+                        prefWidth = width
+                        prefHeight = height
+                        style = "-fx-border-color: dodgerblue;" +
+                                "-fx-border-width: 1px;"
+                    })
+                }
             }
         }
     }
