@@ -6,7 +6,7 @@ class LoggerDelegate {
 
     companion object {
         val defaultLogger =  object : Logger {
-            override fun log(msg: String) {
+            override fun logMessage(msg: String) {
                 println(msg)
             }
         }

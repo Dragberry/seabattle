@@ -30,6 +30,8 @@ class GameView : View() {
     private val roundInfo = SimpleStringProperty()
     private val info = pane {
         label(roundInfo)
+        button("Pause")
+        button("Stop")
     }
     private val enemyField = pane()
 
@@ -75,8 +77,8 @@ class GameView : View() {
 
     override fun onDock() {
         LoggerDelegate.logger = object : Logger {
-            override fun log(msg: String) {
-                LoggerDelegate.defaultLogger.log(msg)
+            override fun logMessage(msg: String) {
+                LoggerDelegate.defaultLogger.log(msg, false)
                 GlobalScope.launch(Dispatchers.Main) {
                     logField.value += "\n$msg"
                     logPane.vvalue = 1.0

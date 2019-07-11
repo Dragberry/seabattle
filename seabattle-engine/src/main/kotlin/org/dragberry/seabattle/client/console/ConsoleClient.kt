@@ -17,7 +17,7 @@ class ConsoleClient {
 
     init {
         LoggerDelegate.logger = object : Logger {
-            override fun log(msg: String) {
+            override fun logMessage(msg: String) {
                 println(msg)
             }
         }
