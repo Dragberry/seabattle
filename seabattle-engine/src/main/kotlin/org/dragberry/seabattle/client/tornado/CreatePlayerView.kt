@@ -70,7 +70,7 @@ class CreatePlayerView : Fragment() {
                 }
             }
             buttons.add(localBtn)
-            localBtn
+            add(localBtn)
             val aiButton = button("AI") {
                 useMaxWidth = true
                 action {
@@ -78,7 +78,7 @@ class CreatePlayerView : Fragment() {
                 }
             }
             buttons.add(aiButton)
-            aiButton
+            add(aiButton)
             val remoteButton = button("Remote") {
                 useMaxWidth = true
                 action {
@@ -86,7 +86,7 @@ class CreatePlayerView : Fragment() {
                 }
             }
             buttons.add(remoteButton)
-            remoteButton
+            add(remoteButton)
         }
     }
 }

@@ -15,6 +15,14 @@ private val COORDINATE_REGEX = Regex("^([a-zA-Z]?)(\\d{1,2})$")
 
 class ConsoleClient {
 
+    init {
+        LoggerDelegate.logger = object : Logger {
+            override fun log(msg: String) {
+                println(msg)
+            }
+        }
+    }
+
     private val mutex = Mutex()
 
     private inner class ConsoleController(private var defaultName: String) : CommanderController {

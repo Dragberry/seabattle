@@ -10,9 +10,11 @@ class Battle(
     enemyCommander: Commander
 ) {
 
-    private val commander: Commander = commander
+    private val logger: Logger by LoggerDelegate()
 
-    private val enemyCommander: Commander = enemyCommander
+    val commander: Commander = commander
+
+    val enemyCommander: Commander = enemyCommander
 
     val settings: BattleSettings by lazy { commander.settings }
 
@@ -49,7 +51,7 @@ class Battle(
         }
     }
 
-    suspend fun play(onEveryStep: (Battle) -> Unit = { }) {
+    suspend fun play(onEveryStep: suspend (Battle) -> Unit = { }) {
         onEveryStep(this)
         do {
             playRound()
@@ -81,33 +83,33 @@ class Battle(
     }
 
     private suspend fun attack(): FireResponseEvent {
-        println("${roles.aggressor().name}:\tI'm attacking...")
+        logger.log("${roles.aggressor().name}:\tI'm attacking...")
         return roles.aggressor().attack()
     }
 
     private suspend fun underAttack() {
-        println("${roles.victim().name}:\tI'm under attack...")
+        logger.log("${roles.victim().name}:\tI'm under attack...")
         println()
         roles.victim().underAttack()
     }
 
     private fun onMiss() {
-        println("${roles.aggressor().name}:\tI missed")
+        logger.log("${roles.aggressor().name}:\tI missed")
         roles.swap()
     }
 
     private fun onHit() {
-        println("${roles.aggressor().name}:\tI hit")
+        logger.log("${roles.aggressor().name}:\tI hit")
     }
 
     private fun onShipDestroy(ship: Ship) {
-        println("${roles.aggressor().name}:\tI destroyed a ${ship.sections.size}-sized ship")
+        logger.log("${roles.aggressor().name}:\tI destroyed a ${ship.sections.size}-sized ship")
     }
 
     private fun onDefeat(ship: Ship) {
-        println("${roles.aggressor().name}:\tI destroyed a ${ship.sections.size}-sized ship")
-        println("${roles.aggressor().name}:\tI won!")
-        println("${roles.victim().name}:\tI lost!")
+        logger.log("${roles.aggressor().name}:\tI destroyed a ${ship.sections.size}-sized ship")
+        logger.log("${roles.aggressor().name}:\tI won!")
+        logger.log("${roles.victim().name}:\tI lost!")
         exitProcess(0)
     }
 
