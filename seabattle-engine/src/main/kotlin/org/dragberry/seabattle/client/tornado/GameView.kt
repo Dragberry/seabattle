@@ -8,8 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.javafx.JavaFx as Main
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.dragberry.seabattle.engine.Logger
-import org.dragberry.seabattle.engine.LoggerDelegate
+import org.dragberry.seabattle.engine.*
 import tornadofx.*
 
 class GameView : View() {
@@ -26,10 +25,10 @@ class GameView : View() {
         content  = label(logField)
     }
 
-    private val field = stackpane()
+    private val field = pane()
     private val roundInfo = SimpleStringProperty()
     private val info = vbox {
-        useMaxWidth = true
+        prefWidth = 100.0
         spacing = 10.0
         label(roundInfo)
         button("Pause") {
@@ -41,22 +40,13 @@ class GameView : View() {
     }
 
     private val enemyField = pane()
-
     override val root = borderpane {
         center {
-            gridpane {
-                val cs1 = ColumnConstraints()
-                cs1.percentWidth = 40.0
-                val cs2 = ColumnConstraints()
-                cs2.percentWidth = 20.0
-                val cs3 = ColumnConstraints()
-                cs3.percentWidth = 40.0
-                columnConstraints.addAll(cs1, cs2, cs3)
-                row {
-                    add(field, 0, 0, 1, 1)
-                    add(info, 1, 0, 1, 1)
-                    add(enemyField, 2, 0, 1, 1)
-                }
+            hbox {
+                spacing = 10.0
+                add(field)
+                add(info)
+                add(enemyField)
             }
         }
         bottom {
@@ -72,37 +62,18 @@ class GameView : View() {
         controller.createBattle()
         GlobalScope.launch {
             controller.initializeBattle {
-                with(primaryStage) {
-                    width = it.settings.width * 25.0 * 2 / 0.8
-                    height = it.settings.height * 25.0 + 50
-                }
-                field.add(createField(it.settings.width, it.settings.height))
+                field.add(FieldPane((it.commander as LocalCommander).fleet))
                 roundInfo.value = "Round: ${it.round}"
-                enemyField.add(createField(it.settings.width, it.settings.height))
+                enemyField.add(FieldPane((it.enemyCommander as LocalCommander).fleet))
+                with(primaryStage) {
+                    minWidth = it.settings.width * 25.0 * 2 + 100.0 + 36.0
+                    minHeight = it.settings.height * 25.0 + 40 + 50
+                    maxWidth = minWidth
+                    maxHeight = minHeight
+                }
             }
             controller.play {
                 roundInfo.value = "Round: ${it.round}"
-            }
-        }
-    }
-
-    private fun createField(width: Int, height: Int): Pane {
-        return pane {
-            for (row in 0..height) {
-                for (column in 0..width) {
-                    add(pane {
-                        val width = 25.0
-                        val height = 25.0
-                        val x = column * height
-                        val y = row * width
-                        layoutX = x
-                        layoutY = y
-                        prefWidth = width
-                        prefHeight = height
-                        style = "-fx-border-color: dodgerblue;" +
-                                "-fx-border-width: 1px;"
-                    })
-                }
             }
         }
     }
@@ -121,5 +92,32 @@ class GameView : View() {
 
     override fun onUndock() {
         LoggerDelegate.logger = null
+    }
+}
+
+class FieldPane(fleet: Fleet<out Sector>) : Pane() {
+
+    init {
+        fleet.field.withIndex().forEach { y ->
+            y.value.withIndex().forEach { x ->
+                children.add(Cell(x.value))
+            }
+        }
+    }
+}
+
+class Cell(val sector: Sector, cellSize: Double = 25.0) : Pane() {
+    init {
+        prefWidth = cellSize
+        prefHeight = cellSize
+        layoutX = (sector.coordinate.x - 1) * cellSize
+        layoutY = (sector.coordinate.y - 1) * cellSize
+        addClass(GameStyle.sector)
+        onHover {
+            println("onHover: ${sector.coordinate.x}-${sector.coordinate.y}")
+        }
+        setOnMouseClicked {
+            println("clicked: ${sector.coordinate.x}-${sector.coordinate.y}")
+        }
     }
 }

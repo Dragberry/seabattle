@@ -9,7 +9,7 @@ open class AICommander : LocalCommander(
         override suspend fun getName(): String = listOf("AI Max", "AI Alex", "AI Sonya", "AI Jax").random()
     },
     object : BattleSettingsProvider {
-        override suspend fun getSettings(): BattleSettings = BattleSettings(10, 10, listOf(4, 3, 3, 2, 2, 2, 1, 1, 1, 1))
+        override suspend fun getSettings(): BattleSettings = BattleSettings(15, 15, listOf(4, 3, 3, 2, 2, 2, 1, 1, 1, 1))
     },
     object : RoleProvider {
         override suspend fun getRole(): Boolean = Random.nextBoolean()
