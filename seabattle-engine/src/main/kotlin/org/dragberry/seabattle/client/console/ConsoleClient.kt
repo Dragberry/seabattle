@@ -132,15 +132,16 @@ class ConsoleClient {
             )).createCommanders()
         val battle = Battle(gameType.first, gameType.second)
         battle.initialize()
-        battle.play { battle ->
-            println("\t${"====".repeat(battle.settings.width + 1)}  Round\t${battle.round}\t${"====".repeat(battle.settings.width + 1)}")
-            val aggressor = battle.roles.aggressor()
+        battle.onEveryStep = {
+            println("\t${"====".repeat(it.settings.width + 1)}  Round\t${it.round}\t${"====".repeat(it.settings.width + 1)}")
+            val aggressor = it.roles.aggressor()
             if (aggressor is FleetOwner && !aggressor.isHidden) {
-                printHeader(battle)
-                printLines(battle, aggressor)
+                printHeader(it)
+                printLines(it, aggressor)
             }
-            println("\t${"====".repeat(battle.settings.width + 1)}${"====".repeat(3)}${"====".repeat(battle.settings.width + 1)}")
+            println("\t${"====".repeat(it.settings.width + 1)}${"====".repeat(3)}${"====".repeat(it.settings.width + 1)}")
         }
+        battle.play()
     }
 
     private fun printLines(battle: Battle, fleetOwner: FleetOwner) {

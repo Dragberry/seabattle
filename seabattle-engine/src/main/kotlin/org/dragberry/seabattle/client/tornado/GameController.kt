@@ -1,17 +1,16 @@
 package org.dragberry.seabattle.client.tornado
 
-import javafx.application.Platform
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.dragberry.seabattle.engine.Battle
 import org.dragberry.seabattle.engine.Commander
-import org.dragberry.seabattle.engine.Logger
 import org.dragberry.seabattle.engine.LoggerDelegate
+import org.dragberry.seabattle.engine.Response
 import tornadofx.Controller
 
 class GameController : Controller() {
 
-    private val logger by LoggerDelegate()
+    val logger by LoggerDelegate()
 
     var commander: Commander? = null
 
@@ -39,12 +38,12 @@ class GameController : Controller() {
         }
     }
 
-    suspend fun play(onEveryStep: (Battle) -> Unit) {
+    suspend fun play(onEveryStep: (Battle) -> Unit, onResponse: (Response) -> Unit) {
         val battle = battle
         if (battle != null) {
-            battle.play {
-                withContext(Dispatchers.Main) { onEveryStep(battle) }
-            }
+            battle.onEveryStep = { withContext(Dispatchers.Main) { onEveryStep(it) } }
+            battle.onResponse = { withContext(Dispatchers.Main) { onResponse(it) } }
+            battle.play()
         } else {
             logger.log("Unable play game.")
         }

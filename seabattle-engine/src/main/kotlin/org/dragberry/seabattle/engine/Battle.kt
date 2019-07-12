@@ -18,6 +18,10 @@ class Battle(
 
     val settings: BattleSettings by lazy { commander.settings }
 
+    var onEveryStep: suspend (Battle) -> Unit = { }
+
+    var onResponse: suspend (Response) -> Unit = { }
+
     inner class Roles {
 
         var isEnemyAggressor = false
@@ -51,7 +55,7 @@ class Battle(
         }
     }
 
-    suspend fun play(onEveryStep: suspend (Battle) -> Unit = { }) {
+    suspend fun play() {
         onEveryStep(this)
         do {
             playRound()
@@ -71,14 +75,8 @@ class Battle(
                 is HitResponse -> onHit()
                 is ShipDestroyedResponse -> onShipDestroy(response.ship)
                 is DefeatResponse -> onDefeat(response.ship)
-                is SystemResponse -> {
-                    when (response.event) {
-                        SystemEvent.EXIT -> exitProcess(0)
-                        SystemEvent.TIMEOUT -> exitProcess(0)
-                        SystemEvent.RESTART -> exitProcess(0)
-                    }
-                }
             }
+            onResponse(response)
         }
     }
 
@@ -110,7 +108,6 @@ class Battle(
         logger.log("${roles.aggressor().name}:\tI destroyed a ${ship.sections.size}-sized ship")
         logger.log("${roles.aggressor().name}:\tI won!")
         logger.log("${roles.victim().name}:\tI lost!")
-        exitProcess(0)
     }
 
     private fun isGoingOn(): Boolean = commander.isAlive && enemyCommander.isAlive
